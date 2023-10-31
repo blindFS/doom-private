@@ -323,7 +323,7 @@
    bibtex-completion-notes-template-one-file "\n** TODO ${year} - ${title} \n  :PROPERTIES:\n   :Custom_ID: ${=key=}\n   :AUTHOR: ${author-or-editor}\n   :JOURNAL: ${journal}\n   :YEAR: ${year}\n  :END:\n\n[[cite:${=key=}]]\n"
    bibtex-completion-pdf-open-function
 	(lambda (fpath)
-	  (call-process "open" nil 0 nil fpath)))
+	  (call-process "open" nil 0 nil fpath))))
 
 ;; (use-package! smart-input-source
 ;;   :init
