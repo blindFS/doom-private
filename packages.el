@@ -6,11 +6,11 @@
 ;; use 'M-x doom/reload'.
 
 (package! rainbow-mode)
+(unpin! org-roam)
+(package! org-roam-ui)
 (package! org-ref)
-(package! org-roam-server)
-(package! org-bullets :recipe (:host github :repo "sabof/org-bullets"))
+(package! org-modern :recipe (:host github :repo "minad/org-modern"))
 ;; (package! smart-input-source)
-(package! valign.el :recipe (:host github :repo "casouri/valign"))
 ;; (package! ob-applescript :recipe (:host github :repo "stig/ob-applescript.el"))
 
 ;; To install SOME-PACKAGE from MELPA, ELPA or emacsmirror:

@@ -185,26 +185,18 @@
                              (org-agenda-files :maxlevel . 9)))
 
   ;; decorator prettify
-  (defface org-decorator-face
-    '((((class color) (min-colors 88) (background dark))
-       :foreground "#bb79d6"))
-    "for org-mode decorators."
-    :group 'basic-faces)
-
-  (font-lock-add-keywords
-   'org-mode '(("^\s*\\([+-]\\|[0-9][.)]\\)\s"
-                .
-                'org-decorator-face)
-               ("^\s*\\(+\\)\s"
-                1
-                (compose-region (- (match-end 0) 2)
-                                (- (match-end 0) 1)
-                                "►"))
-               ("^\s*\\(-\\)\s"
-                1
-                (compose-region (- (match-end 0) 2)
-                                (- (match-end 0) 1)
-                                "◅")))))
+  (add-hook 'org-mode-hook  (lambda ()
+                            (setq prettify-symbols-alist
+                                  '(("lambda" . ?λ)
+                                    (":PROPERTIES:" . ?)
+                                    (":ID:" . ?)
+                                    (":Custom_ID:" . ?)
+                                    (":END:" . ?)
+                                    (":TITLE:" . ?)
+                                    (":AUTHOR:" . ?)
+                                    ("#+RESULTS:" . ?)))
+                            (prettify-symbols-mode)))
+  )
 
 ;; --------------- Functions --------------
 
@@ -252,59 +244,6 @@
         (insert
          (org-make-link-string (concat "file:" file ".png"))))))
 
-(appendq! +ligatures-extra-symbols
-          `(:checkbox      "☐"
-            :pending       "◼"
-            :checkedbox    "☑"
-            :list_property "∷"
-            :results       "➾"
-            :property      "☸"
-            :properties    "⚙"
-            :end           "∎"
-            :options       "⌥"
-            :title         "𝙏"
-            :subtitle      "𝙩"
-            :author        "𝘼"
-            :date          "𝘿"
-            :latex_header  "⇥"
-            :latex_class   "🄲"
-            :beamer_header "↠"
-            :begin_quote   "❮"
-            :end_quote     "❯"
-            :priority_a   ,(propertize "⚑" 'face 'all-the-icons-red)
-            :priority_b   ,(propertize "⬆" 'face 'all-the-icons-orange)
-            :priority_c   ,(propertize "■" 'face 'all-the-icons-yellow)
-            :priority_d   ,(propertize "⬇" 'face 'all-the-icons-green)
-            :priority_e   ,(propertize "❓" 'face 'all-the-icons-blue)
-            :em_dash       "—"))
-(set-ligatures! 'org-mode
-  :merge t
-  :checkbox      "[ ]"
-  :pending       "[-]"
-  :checkedbox    "[X]"
-  :list_property "::"
-  :results       "#+RESULTS:"
-  :property      "#+PROPERTY:"
-  :property      ":PROPERTIES:"
-  :end           ":END:"
-  :options       "#+OPTIONS:"
-  :title         "#+TITLE:"
-  :subtitle      "#+SUBTITLE:"
-  :author        "#+AUTHOR:"
-  :date          "#+DATE:"
-  :latex_class   "#+LATEX_CLASS:"
-  :latex_header  "#+LATEX_HEADER:"
-  :beamer_header "#+BEAMER_HEADER:"
-  :begin_quote   "#+BEGIN_QUOTE"
-  :end_quote     "#+END_QUOTE"
-  :begin_export  "#+BEGIN_EXPORT"
-  :end_export    "#+END_EXPORT"
-  :priority_a    "[#A]"
-  :priority_b    "[#B]"
-  :priority_c    "[#C]"
-  :priority_d    "[#D]"
-  :priority_e    "[#E]"
-  :em_dash       "---")
 
 ;; --------------- Packages --------------
 
@@ -322,8 +261,8 @@
    bibtex-completion-notes-template-multiple-files "** ${title}, ${journal}, (${year}) :${=type=}: \n\nSee [[cite:${=key=}]]\n"
    bibtex-completion-notes-template-one-file "\n** TODO ${year} - ${title} \n  :PROPERTIES:\n   :Custom_ID: ${=key=}\n   :AUTHOR: ${author-or-editor}\n   :JOURNAL: ${journal}\n   :YEAR: ${year}\n  :END:\n\n[[cite:${=key=}]]\n"
    bibtex-completion-pdf-open-function
-	(lambda (fpath)
-	  (call-process "open" nil 0 nil fpath))))
+        (lambda (fpath)
+          (call-process "open" nil 0 nil fpath))))
 
 ;; (use-package! smart-input-source
 ;;   :init
@@ -335,25 +274,29 @@
 ;;   (smart-input-source-global-respect-mode)
 ;;   (smart-input-source-global-follow-context-mode))
 
-(use-package! valign
-  :config
-  ;; (add-hook 'org-mode-hook #'valign-mode)
-  )
-
 (use-package! rainbow-mode)
 
-(use-package! org-bullets
+(use-package! org-modern
   :config
-  (add-hook 'org-mode-hook #'org-bullets-mode))
+  (add-hook 'org-mode-hook #'org-modern-mode)
+  (add-hook 'org-agenda-finalize-hook #'org-modern-agenda)
+  (setq org-modern-block-fringe 1)
+  (setq org-modern-block-name '("‣" "‣")))
 
 (after! org-roam
-  (setq org-roam-directory "~/Dropbox/org/notes/")
-  (setq org-roam-graph-exclude-matcher '("bible/" "beamer/")))
+  (setq org-roam-directory (file-truename "~/Dropbox/org/notes/")))
 
-(after! pretty-code
-  (setq +pretty-code-enabled-modes '(emacs-lisp-mode org-mode))
-  (setq +pretty-code-symbols
-        (append +pretty-code-symbols
-                '(("[ ]" .  "☐")
-                  ("[X]" . "☑" )
-                  ("[-]" . "❍" )))))
+(use-package! websocket
+    :after org-roam)
+
+(use-package! org-roam-ui
+    :after org-roam ;; or :after org
+;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
+;;         a hookable mode anymore, you're advised to pick something yourself
+;;         if you don't care about startup time, use
+;;  :hook (after-init . org-roam-ui-mode)
+    :config
+    (setq org-roam-ui-sync-theme t
+          org-roam-ui-follow t
+          org-roam-ui-update-on-save t
+          org-roam-ui-open-on-start t))
