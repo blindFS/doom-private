@@ -10,6 +10,9 @@
   ;;   (kbd "<tab>") 'org-table-next-field)
 
   ;; options
+  (org-latex-preview-auto-mode)
+  (setq org-element-use-cache t)
+  (setq org-latex-preview-numbered t)
   (setq org-directory "~/Dropbox/org/")
   (setq org-download-image-dir "~/Dropbox/org/notes/assets/image/")
   (setq org-attach-id-dir "~/Dropbox/org/notes/assets/attach/")
@@ -19,7 +22,6 @@
 
   (setq org-tags-column -120)
   (setq org-log-done 'time)
-  (setq org-completion-use-ido t)
 
   (setq org-emphasis-alist
         (quote
@@ -31,12 +33,12 @@
           ("+" org-strike))))
   (defface org-bold
     '((t :foreground "salmon"
-         :inherit bold))
+       :inherit bold))
     "Org-mode emphasis bold."
     :group 'org-faces)
   (defface org-italic
     '((t :foreground "pale green"
-         :inherit italic))
+       :inherit italic))
     "Org-mode emphasis italic."
     :group 'org-faces)
   (defface org-strike
@@ -86,7 +88,7 @@
 
   ;; minted code block
   (setq org-src-preserve-indentation t)
-  (setq org-latex-listings 'minted)
+  (setq org-latex-src-block-backend 'minted)
   (setq org-latex-minted-options
         '(("fontsize" "\\small")("obeytabs" "true")))
   (add-to-list 'org-latex-packages-alist '("" "minted" nil))
@@ -122,7 +124,7 @@
       (setq org-html-head-include-default-style nil)
       (setq org-html-head (concat "<link href=\"assets/css/navigator.css\" rel=\"stylesheet\" type=\"text/css\">\n"
                                   "<link href=\"assets/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n"))))
-  (add-hook 'org-export-before-processing-hook 'my-org-css-hook)
+  (add-hook 'org-export-before-processing-functions 'my-org-css-hook)
 
   (org-babel-do-load-languages
    'org-babel-load-languages
@@ -186,16 +188,18 @@
 
   ;; decorator prettify
   (add-hook 'org-mode-hook  (lambda ()
-                            (setq prettify-symbols-alist
-                                  '(("lambda" . ?λ)
-                                    (":PROPERTIES:" . ?)
-                                    (":ID:" . ?)
-                                    (":Custom_ID:" . ?)
-                                    (":END:" . ?)
-                                    (":TITLE:" . ?)
-                                    (":AUTHOR:" . ?)
-                                    ("#+RESULTS:" . ?)))
-                            (prettify-symbols-mode)))
+                              (setq prettify-symbols-alist
+                                    '(("lambda" . ?λ)
+                                      (":PROPERTIES:" . ?)
+                                      (":ID:" . ?)
+                                      (":Custom_ID:" . ?)
+                                      (":END:" . ?)
+                                      (":TITLE:" . ?)
+                                      (":AUTHOR:" . ?)
+                                      (":YEAR:" . ?⌛)
+                                      (":JOURNAL:" . ?📖)
+                                      ("#+RESULTS:" . ?)))
+                              (prettify-symbols-mode)))
   )
 
 ;; --------------- Functions --------------
@@ -235,34 +239,48 @@
                     (if (string-equal system-type "darwin")
                         (do-applescript "tell application \"Emacs\" to set miniaturized of window 1 to true"))
                     (call-process "screencapture" nil nil nil "-s" path2x)
-                    (call-process-shell-command "convert" nil nil nil
-                                                (concat " -scale 50% -quality 100% " path2x " " path))
+                    (call-process-shell-command (concat "convert -scale 50% -quality 100% " path2x " " path))
                     (if (string-equal system-type "darwin")
                         (do-applescript "tell application \"Emacs\" to set miniaturized of window 1 to false"))
                     0))))
     (if (= res 0)
         (insert
-         (org-make-link-string (concat "file:" file ".png"))))))
+         (org-link-make-string (concat "file:" file ".png"))))))
 
 
 ;; --------------- Packages --------------
+(defvar my-bib-file "~/Dropbox/org/notes/papers.bib")
+(defvar my-pdf-path "~/Dropbox/Papers/")
+(after! citar
+  (setq citar-bibliography (list my-bib-file))
+  (setq citar-library-paths (list my-pdf-path))
+  (setq citar-notes-paths '("~/Dropbox/org/notes/citar/")))
+(after! bibtex-completion
+  (setq bibtex-completion-bibliography (list my-bib-file)))
+(after! biblio
+  (setq biblio-arxiv-bibtex-header "article")
+  (setq biblio-download-directory my-pdf-path))
 
 (use-package! org-ref
   :after org
   :config
+  (require 'org-ref-arxiv)
   (plist-put org-format-latex-options :scale 1.0)
   (map! :map bibtex-mode-map
         :n ",s" #'org-ref-sort-bibtex-entry
-        :n ",n" #'org-ref-open-bibtex-notes)
+        :n ",n" (lambda ()
+                  (interactive)
+                  (org-ref-open-bibtex-notes)
+                  (org-id-store-link)))
   (setq
-   bibtex-completion-bibliography "~/Dropbox/org/notes/papers.bib"
-   bibtex-completion-library-path "~/Dropbox/Papers/"
+   bibtex-completion-bibliography my-bib-file
+   bibtex-completion-library-path my-pdf-path
    bibtex-completion-notes-path "~/Dropbox/org/notes/papers.org"
    bibtex-completion-notes-template-multiple-files "** ${title}, ${journal}, (${year}) :${=type=}: \n\nSee [[cite:${=key=}]]\n"
    bibtex-completion-notes-template-one-file "\n** TODO ${year} - ${title} \n  :PROPERTIES:\n   :Custom_ID: ${=key=}\n   :AUTHOR: ${author-or-editor}\n   :JOURNAL: ${journal}\n   :YEAR: ${year}\n  :END:\n\n[[cite:${=key=}]]\n"
    bibtex-completion-pdf-open-function
-        (lambda (fpath)
-          (call-process "open" nil 0 nil fpath))))
+   (lambda (fpath)
+     (call-process "open" nil 0 nil fpath))))
 
 ;; (use-package! smart-input-source
 ;;   :init
@@ -277,26 +295,38 @@
 (use-package! rainbow-mode)
 
 (use-package! org-modern
-  :config
-  (add-hook 'org-mode-hook #'org-modern-mode)
-  (add-hook 'org-agenda-finalize-hook #'org-modern-agenda)
-  (setq org-modern-block-fringe 1)
-  (setq org-modern-block-name '("‣" "‣")))
+  :custom
+  (org-modern-hide-stars nil) ; adds extra indentation
+  (org-modern-table t)
+  (org-modern-block-fringe 1)
+  (org-modern-block-name '("‣" "‣"))
+  :hook
+  (org-mode . org-modern-mode)
+  (org-agenda-finalize . org-modern-agenda))
 
-(after! org-roam
-  (setq org-roam-directory (file-truename "~/Dropbox/org/notes/")))
+(use-package! org-modern-indent
+  :config
+  (add-hook 'org-mode-hook #'org-modern-indent-mode 90))
+
+(use-package! org-roam
+  :ensure t
+  :custom
+  (org-roam-directory (file-truename "~/Dropbox/org/notes/"))
+  (org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
+  :config
+  (org-roam-db-autosync-mode))
 
 (use-package! websocket
-    :after org-roam)
+  :after org-roam)
 
 (use-package! org-roam-ui
-    :after org-roam ;; or :after org
-;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
-;;         a hookable mode anymore, you're advised to pick something yourself
-;;         if you don't care about startup time, use
-;;  :hook (after-init . org-roam-ui-mode)
-    :config
-    (setq org-roam-ui-sync-theme t
-          org-roam-ui-follow t
-          org-roam-ui-update-on-save t
-          org-roam-ui-open-on-start t))
+  :after org-roam ;; or :after org
+  ;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
+  ;;         a hookable mode anymore, you're advised to pick something yourself
+  ;;         if you don't care about startup time, use
+  ;;  :hook (after-init . org-roam-ui-mode)
+  :custom
+  (org-roam-ui-sync-theme t)
+  (org-roam-ui-follow t)
+  (org-roam-ui-update-on-save t)
+  (org-roam-ui-open-on-start t))

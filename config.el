@@ -5,10 +5,10 @@
 (add-to-list 'default-frame-alist '(undecorated . t))
 (add-to-list 'initial-frame-alist '(fullscreen . maximized))
 
-(setq doom-font (font-spec :family 'Iosevka' :size 15))
-(setq doom-font (font-spec :family "NovaMono Nerd Font" :size 14 :weight 'normal)
-     doom-variable-pitch-font (font-spec :family "NovaMono Nerd Font" :size 14)
-     doom-theme 'doom-dracula)
+;; (setq doom-font (font-spec :family "NovaMono Nerd Font" :size 14 :weight 'normal)
+;;      doom-variable-pitch-font (font-spec :family "NovaMono Nerd Font" :size 14))
+(setq doom-font (font-spec :family "Iosevka" :size 15))
+(setq doom-theme 'doom-Iosvkem)
 (setq doom-themes-neotree-file-icons t)
 
 (setq configuration-layer--elpa-archives
