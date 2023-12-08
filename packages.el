@@ -6,6 +6,7 @@
 ;; use 'M-x doom/reload'.
 
 (package! rainbow-mode)
+(package! ob-applescript)
 (package! org-roam-ui)
 (package! org-ref)
 (package! org-modern :recipe (:host github :repo "minad/org-modern"))

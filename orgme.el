@@ -10,8 +10,8 @@
   ;;   (kbd "<tab>") 'org-table-next-field)
 
   ;; options
-  (org-latex-preview-auto-mode)
-  (setq org-element-use-cache t)
+  (add-hook 'org-mode-hook (lambda () (org-latex-preview-auto-mode)))
+  (setq org-element-use-cache nil)
   (setq org-latex-preview-numbered t)
   (setq org-directory "~/Dropbox/org/")
   (setq org-download-image-dir "~/Dropbox/org/notes/assets/image/")
@@ -265,7 +265,7 @@
   :after org
   :config
   (require 'org-ref-arxiv)
-  (plist-put org-format-latex-options :scale 1.0)
+  (plist-put org-latex-preview-options :scale 1.0)
   (map! :map bibtex-mode-map
         :n ",s" #'org-ref-sort-bibtex-entry
         :n ",n" (lambda ()
@@ -275,8 +275,8 @@
   (setq
    bibtex-completion-bibliography my-bib-file
    bibtex-completion-library-path my-pdf-path
-   bibtex-completion-notes-path "~/Dropbox/org/notes/papers.org"
-   bibtex-completion-notes-template-multiple-files "** ${title}, ${journal}, (${year}) :${=type=}: \n\nSee [[cite:${=key=}]]\n"
+   bibtex-completion-notes-path "~/Dropbox/org/notes/"
+   bibtex-completion-notes-template-multiple-files "\n** TODO ${year} - ${title} \n  :PROPERTIES:\n   :Custom_ID: ${=key=}\n   :AUTHOR: ${author-or-editor}\n   :JOURNAL: ${journal}\n   :YEAR: ${year}\n  :END:\n\n[[cite:${=key=}]]\n"
    bibtex-completion-notes-template-one-file "\n** TODO ${year} - ${title} \n  :PROPERTIES:\n   :Custom_ID: ${=key=}\n   :AUTHOR: ${author-or-editor}\n   :JOURNAL: ${journal}\n   :YEAR: ${year}\n  :END:\n\n[[cite:${=key=}]]\n"
    bibtex-completion-pdf-open-function
    (lambda (fpath)
@@ -330,3 +330,6 @@
   (org-roam-ui-follow t)
   (org-roam-ui-update-on-save t)
   (org-roam-ui-open-on-start t))
+
+(use-package! ob-applescript
+  :custom (require 'ob-applescript))
