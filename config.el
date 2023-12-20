@@ -15,3 +15,5 @@
       '(("melpa-cn" . "http://elpa.emacs-china.org/melpa/")
         ("org-cn"   . "http://elpa.emacs-china.org/org/")
         ("gnu-cn"   . "http://elpa.emacs-china.org/gnu/")))
+(load! "pix2tex")
+(setq pix2tex-screenshot-method "screencapture -i %s")
