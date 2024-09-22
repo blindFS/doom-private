@@ -265,7 +265,6 @@
   :after org
   :config
   (require 'org-ref-arxiv)
-  (plist-put org-latex-preview-options :scale 1.0)
   (map! :map bibtex-mode-map
         :n ",s" #'org-ref-sort-bibtex-entry
         :n ",n" (lambda ()
