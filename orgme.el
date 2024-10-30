@@ -10,7 +10,7 @@
   ;;   (kbd "<tab>") 'org-table-next-field)
 
   ;; options
-  (add-hook 'org-mode-hook (lambda () (org-latex-preview-auto-mode)))
+  ;(add-hook 'org-mode-hook (lambda () (org-latex-preview-auto-mode)))
   (setq org-element-use-cache nil)
   (setq org-latex-preview-numbered t)
   (setq org-directory "~/Dropbox/org/")
