@@ -6,7 +6,7 @@
 (tool-bar-mode t)
 (tool-bar-mode 0)
 
-(setq doom-font (font-spec :family "Sarasa Term SC Nerd" :size 15))
+(setq doom-font (font-spec :family "Iosevka Nerd Font Mono" :size 15))
 (setq doom-theme 'doom-Iosvkem)
 (setq doom-themes-neotree-file-icons t)
 
